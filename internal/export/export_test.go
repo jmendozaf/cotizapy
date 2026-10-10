@@ -81,6 +81,34 @@ func TestWrite(t *testing.T) {
 	}
 }
 
+func TestPageOnlyWritesTheTable(t *testing.T) {
+	ctx := context.Background()
+	st, err := store.Open(filepath.Join(t.TempDir(), "cotiza.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	st.Upsert(ctx, []rates.Rate{{Source: rates.SET, Currency: "USD", Date: "2026-10-09", Buy: "5678.11", Sell: "5698.34"}})
+	dir := t.TempDir()
+
+	if _, err := Page(ctx, st, dir, time.Date(2026, 10, 10, 12, 0, 0, 0, time.UTC)); err != nil {
+		t.Fatal(err)
+	}
+
+	entries, _ := os.ReadDir(dir)
+	var names []string
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	if strings.Join(names, ",") != ".nojekyll,index.html" {
+		t.Errorf("files = %v; want only the page", names)
+	}
+	page, _ := os.ReadFile(filepath.Join(dir, "index.html"))
+	if !strings.Contains(string(page), "5.698,34") || strings.Contains(string(page), ".csv") {
+		t.Error("the page should show the rates without linking to data files")
+	}
+}
+
 func TestFormatGuaranies(t *testing.T) {
 	for in, want := range map[rates.Decimal]string{"5694.47": "5.694,47", "35.96": "35,96", "1": "1", "123456": "123.456", "": "—"} {
 		if got := formatGuaranies(in); got != want {

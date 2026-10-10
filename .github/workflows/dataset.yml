@@ -1,4 +1,4 @@
-# Keeps the static dataset on the gh-pages branch up to date (served by GitHub Pages).
+# Keeps the demo page on GitHub Pages up to date: only the table of latest rates, not the data files.
 # The SQLite database travels between runs in the Actions cache; if the cache is gone,
 # the sync starts from scratch and downloads the whole history again (~30 seconds).
 name: dataset
@@ -14,7 +14,9 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: dataset
@@ -23,6 +25,9 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -48,26 +53,12 @@ jobs:
           path: cotiza.db
           key: cotiza-db-${{ github.run_id }}
 
-      - name: Check out gh-pages
-        run: |
-          if git fetch --depth=1 origin gh-pages; then
-            git worktree add site FETCH_HEAD
-            git -C site switch -c gh-pages
-          else
-            git worktree add --orphan -b gh-pages site
-          fi
-
       - name: Export
-        run: ./cotiza export --dir site
+        run: ./cotiza export --page-only --dir site
 
-      - name: Publish
-        working-directory: site
-        run: |
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No changes"
-            exit 0
-          fi
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "data: $(TZ=America/Asuncion date +%F\ %H:%M)"
-          git push origin gh-pages
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

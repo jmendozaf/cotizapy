@@ -109,7 +109,34 @@ func Write(ctx context.Context, st *store.Store, dir string, now time.Time) (Sta
 	}); err != nil {
 		return Stats{}, err
 	}
-	if err := w.page(series, byCurrency, updated); err != nil {
+	if err := w.page(series, byCurrency, updated, true); err != nil {
+		return Stats{}, err
+	}
+	if err := w.write(".nojekyll", nil); err != nil {
+		return Stats{}, err
+	}
+	return w.stats, nil
+}
+
+// Page writes only index.html, the table of latest rates, without the JSON and CSV files behind it.
+func Page(ctx context.Context, st *store.Store, dir string, now time.Time) (Stats, error) {
+	w := &writer{dir: dir}
+	series, err := st.Series(ctx)
+	if err != nil {
+		return Stats{}, err
+	}
+	latest, err := st.Latest(ctx)
+	if err != nil {
+		return Stats{}, err
+	}
+	byCurrency := map[string]map[string]rates.Rate{}
+	for _, r := range latest {
+		if byCurrency[r.Source] == nil {
+			byCurrency[r.Source] = map[string]rates.Rate{}
+		}
+		byCurrency[r.Source][r.Currency] = r
+	}
+	if err := w.page(series, byCurrency, now.UTC().Format(time.RFC3339), false); err != nil {
 		return Stats{}, err
 	}
 	if err := w.write(".nojekyll", nil); err != nil {
@@ -246,7 +273,8 @@ type pageRow struct {
 	BCP      *rates.Rate
 }
 
-func (w *writer) page(series []store.Series, latest map[string]map[string]rates.Rate, updated string) error {
+// page writes index.html; withFiles links each rate to its CSV and explains the files next to it.
+func (w *writer) page(series []store.Series, latest map[string]map[string]rates.Rate, updated string, withFiles bool) error {
 	var rows []pageRow
 	// Only the DNIT currencies; the rest of the BCP ones stay in the JSON and CSV files.
 	for _, s := range series {
@@ -264,7 +292,7 @@ func (w *writer) page(series []store.Series, latest map[string]map[string]rates.
 	}
 	slices.SortStableFunc(rows, func(a, b pageRow) int { return cmp.Compare(rank(a.Currency), rank(b.Currency)) })
 	var buf bytes.Buffer
-	if err := page.Execute(&buf, map[string]any{"Rows": rows, "UpdatedAt": updated}); err != nil {
+	if err := page.Execute(&buf, map[string]any{"Rows": rows, "UpdatedAt": updated, "Files": withFiles}); err != nil {
 		return err
 	}
 	return w.write("index.html", buf.Bytes())

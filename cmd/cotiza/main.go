@@ -36,7 +36,7 @@ Uso:
   cotiza history  <moneda> [--from] [--to] [--source] [--csv]
   cotiza latest                                        última cotización de cada moneda
   cotiza series                                        monedas y rango de fechas disponibles
-  cotiza export   [--dir site]                         genera el dataset estático (JSON y CSV)
+  cotiza export   [--dir site] [--page-only]           genera el dataset estático (JSON y CSV)
   cotiza serve    [--addr :8080] [--sync-every 6h]     API HTTP
   cotiza version
 
@@ -311,6 +311,7 @@ func runExport(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("export", flag.ExitOnError)
 	db := fs.String("db", defaultDB(), "archivo de base de datos")
 	dir := fs.String("dir", "site", "carpeta de salida")
+	pageOnly := fs.Bool("page-only", false, "solo la página con la tabla, sin los archivos JSON y CSV")
 	if _, err := parse(fs, args); err != nil {
 		return err
 	}
@@ -319,7 +320,11 @@ func runExport(ctx context.Context, args []string) error {
 		return err
 	}
 	defer st.Close()
-	stats, err := export.Write(ctx, st, *dir, time.Now())
+	write := export.Write
+	if *pageOnly {
+		write = export.Page
+	}
+	stats, err := write(ctx, st, *dir, time.Now())
 	if err != nil {
 		return err
 	}

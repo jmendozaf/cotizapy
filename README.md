@@ -28,12 +28,16 @@ $ cotiza get usd 2026-10-11
 - **Las dos fuentes oficiales**: la DNIT (compra y venta, publicada para fines tributarios) y el BCP (cotización referencial).
 - **Todo el historial**: DNIT desde enero de 2010 (6 monedas) y BCP desde 2001 (22 monedas, incluidos oro y DEG). Unas 150.000 cotizaciones sincronizadas en ~30 segundos.
 - **Consulta por fecha con la regla resuelta**: si pedís un domingo o un feriado, devuelve la última cotización publicada antes y te dice de qué fecha es (`date` vs `requested_date`).
-- **Dataset abierto**: JSON y CSV en GitHub Pages, actualizado cuatro veces por día por GitHub Actions. Se usa con un `fetch` o desde Excel, sin instalar nada.
+- **Dataset estático**: `cotiza export` genera JSON y CSV listos para servir desde cualquier hosting estático y usar con un `fetch` o desde una planilla.
 - **Un solo binario** sin dependencias, o una imagen Docker.
+
+**Demo**: **https://jmendozaf.github.io/cotizapy/**, la última cotización de cada moneda, actualizada cuatro veces por día por GitHub Actions. Publica solo la tabla; para usar los datos, corré tu propia copia.
 
 ## Dataset en JSON y CSV
 
-Sin instalar nada: **https://jmendozaf.github.io/cotizapy/**
+```sh
+cotiza export --dir site   # genera los archivos en ./site
+```
 
 | Archivo | Contenido |
 |---|---|
@@ -44,12 +48,14 @@ Sin instalar nada: **https://jmendozaf.github.io/cotizapy/**
 | `bcp/EUR.csv` | Todo el historial en CSV |
 | `index.json` | Fuentes, monedas, primera y última fecha de cada una |
 
+Subí la carpeta a cualquier hosting estático (GitHub Pages, Netlify, S3…) y usalos así:
+
 ```js
-const { rates } = await fetch("https://jmendozaf.github.io/cotizapy/set/USD/2026.json").then(r => r.json());
+const { rates } = await fetch("https://tu-sitio/set/USD/2026.json").then(r => r.json());
 rates["2026-10-09"].sell; // 5698.34
 ```
 
-En Google Sheets: `=IMPORTDATA("https://jmendozaf.github.io/cotizapy/set/USD.csv")`.
+En Google Sheets: `=IMPORTDATA("https://tu-sitio/set/USD.csv")`.
 
 Los montos son números exactos tal como los publica la fuente (nunca pasan por punto flotante).
 
@@ -148,7 +154,7 @@ make binaries   # binarios para Linux, macOS y Windows en ./dist
 
 Con Go 1.27 local: `go test ./...` y `go build ./cmd/cotiza`.
 
-El dataset lo publica [`.github/workflows/dataset.yml`](.github/workflows/dataset.yml) en la rama `gh-pages`. La base viaja entre corridas en el cache de Actions; si se pierde, la siguiente corrida baja todo de nuevo.
+La demo la publica [`.github/workflows/dataset.yml`](.github/workflows/dataset.yml) en GitHub Pages con `cotiza export --page-only`. La base viaja entre corridas en el cache de Actions; si se pierde, la siguiente corrida baja todo de nuevo.
 
 ## Licencia
 

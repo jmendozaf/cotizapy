@@ -33,7 +33,7 @@
 <body>
 <main>
   <h1>Cotizaciones del Guaraní</h1>
-  <p>Tipos de cambio que publican la <a href="https://www.dnit.gov.py/web/portal-institucional/cotizaciones">DNIT</a> y el <a href="https://www.bcp.gov.py/webapps/web/cotizacion/monedas-historica">Banco Central del Paraguay</a>, con todo el historial, en JSON y CSV. Se actualiza todos los días. Actualizado: <time>{{.UpdatedAt}}</time>.</p>
+  <p>Tipos de cambio que publican la <a href="https://www.dnit.gov.py/web/portal-institucional/cotizaciones">DNIT</a> y el <a href="https://www.bcp.gov.py/webapps/web/cotizacion/monedas-historica">Banco Central del Paraguay</a>, {{if .Files}}con todo el historial, en JSON y CSV. {{end}}Se actualiza todos los días. Actualizado: <time>{{.UpdatedAt}}</time>.</p>
 
   <h2>Última cotización</h2>
   <div class="table">
@@ -44,11 +44,11 @@
       <tr>
         <td><strong>{{.Currency}}</strong><small>{{.Name}}</small></td>
         {{- if .SET}}
-        <td><a href="set/{{.Currency}}.csv">{{gs .SET.Buy}}</a><small>{{.SET.Date}}</small></td>
+        <td>{{if $.Files}}<a href="set/{{.Currency}}.csv">{{gs .SET.Buy}}</a>{{else}}{{gs .SET.Buy}}{{end}}<small>{{.SET.Date}}</small></td>
         <td>{{gs .SET.Sell}}</td>
         {{- else}}<td>—</td><td>—</td>{{end}}
         {{- if .BCP}}
-        <td><a href="bcp/{{.Currency}}.csv">{{gs .BCP.Reference}}</a><small>{{.BCP.Date}}</small></td>
+        <td>{{if $.Files}}<a href="bcp/{{.Currency}}.csv">{{gs .BCP.Reference}}</a>{{else}}{{gs .BCP.Reference}}{{end}}<small>{{.BCP.Date}}</small></td>
         {{- else}}<td>—</td>{{end}}
       </tr>
     {{- end}}
@@ -56,6 +56,7 @@
   </table>
   </div>
 
+  {{- if .Files}}
   <h2>Cómo usarlo</h2>
   <pre><code>latest.json                 última cotización de todo
 set/USD/latest.json         último dólar de la DNIT
@@ -65,6 +66,10 @@ bcp/EUR.csv                 todo el historial en CSV
 index.json                  fuentes, monedas y rango de fechas</code></pre>
   <p>La DNIT publica todos los días del calendario (fines de semana y feriados repiten el último día hábil). El BCP publica solo días hábiles: para un sábado, usá el viernes.</p>
   <p>Para consultar por fecha con esa regla resuelta, usá la API o la línea de comandos: <a href="https://github.com/jmendozaf/cotizapy">github.com/jmendozaf/cotizapy</a>.</p>
+
+  {{- else}}
+  <p>Es una demo de <a href="https://github.com/jmendozaf/cotizapy">cotizapy</a>: para usar las cotizaciones desde tu código, corré tu propia copia con la línea de comandos, la API o el dataset en JSON y CSV.</p>
+  {{- end}}
 
   <footer>Datos públicos de la DNIT y el BCP, sin modificar. Proyecto de <a href="https://jmf.dev">jmf.dev</a>.</footer>
 </main>
