@@ -1,4 +1,4 @@
-// Command cotiza downloads, stores and serves the guaraní exchange rates published by the DNIT (ex SET) and the BCP.
+// Command cotiza downloads, stores and serves the Guaraní exchange rates published by the DNIT (ex SET) and the BCP.
 package main
 
 import (
@@ -28,7 +28,7 @@ import (
 
 var version = "dev"
 
-const usage = `cotiza: cotizaciones del guaraní (DNIT y BCP)
+const usage = `cotiza: cotizaciones del Guaraní (DNIT y BCP)
 
 Uso:
   cotiza sync     [--source set|bcp] [--full]          descarga las cotizaciones y actualiza la base

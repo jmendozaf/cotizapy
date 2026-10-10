@@ -1,6 +1,6 @@
 # cotizapy 🇵🇾
 
-Cotizaciones del guaraní, de la DNIT (ex SET) y del Banco Central del Paraguay, con todo el historial. Las descarga, las guarda en SQLite y las expone por línea de comandos, API HTTP o como dataset estático en JSON y CSV.
+Cotizaciones del Guaraní, de la DNIT (ex SET) y del Banco Central del Paraguay, con todo el historial. Las descarga, las guarda en SQLite y las expone por línea de comandos, API HTTP o como dataset estático en JSON y CSV.
 
 ```sh
 $ cotiza get usd 2026-10-11
