@@ -1,0 +1,6 @@
+cotiza.db
+cotiza.db-*
+/dist/
+/site/
+/data/
+.DS_Store

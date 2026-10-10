@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cotizapy · Cotizaciones del guaraní (DNIT y BCP)</title>
+<meta name="description" content="Tipos de cambio del guaraní publicados por la DNIT (ex SET) y el Banco Central del Paraguay, en JSON y CSV, actualizados todos los días.">
+<style>
+  :root { --bg:#fff; --fg:#0b1220; --muted:#5b6474; --line:#e6e8ec; --accent:#0066ff; --code:#f4f6f9; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1220; --fg:#e8ebf0; --muted:#97a0b0; --line:#1e2738; --accent:#5c9dff; --code:#121b2d; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 48px 16px 64px; }
+  h1 { font-size: 1.9rem; letter-spacing: -0.02em; margin: 0 0 .25rem; }
+  h2 { font-size: 1.1rem; margin: 2.5rem 0 .75rem; }
+  p, li { color: var(--muted); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .table { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: .6rem .8rem; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  tr:last-child td { border-bottom: 0; }
+  thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 500; }
+  td small { display: block; color: var(--muted); font-size: .75rem; }
+  code, pre { font: .85rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code); border-radius: 6px; }
+  code { padding: .1rem .35rem; }
+  pre { padding: .9rem 1rem; overflow-x: auto; }
+  footer { margin-top: 3rem; font-size: .85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cotizaciones del guaraní</h1>
+  <p>Tipos de cambio que publican la <a href="https://www.dnit.gov.py/web/portal-institucional/cotizaciones">DNIT (ex SET)</a> y el <a href="https://www.bcp.gov.py/webapps/web/cotizacion/monedas-historica">Banco Central del Paraguay</a>, con todo el historial, en JSON y CSV. Se actualiza todos los días. Actualizado: <time>{{.UpdatedAt}}</time>.</p>
+
+  <h2>Última cotización</h2>
+  <div class="table">
+  <table>
+    <thead><tr><th>Moneda</th><th>DNIT compra</th><th>DNIT venta</th><th>BCP referencial</th></tr></thead>
+    <tbody>
+    {{- range .Rows}}
+      <tr>
+        <td><strong>{{.Currency}}</strong><small>{{.Name}}</small></td>
+        {{- if .SET}}
+        <td><a href="set/{{.Currency}}.csv">{{gs .SET.Buy}}</a><small>{{.SET.Date}}</small></td>
+        <td>{{gs .SET.Sell}}</td>
+        {{- else}}<td>—</td><td>—</td>{{end}}
+        {{- if .BCP}}
+        <td><a href="bcp/{{.Currency}}.csv">{{gs .BCP.Reference}}</a><small>{{.BCP.Date}}</small></td>
+        {{- else}}<td>—</td>{{end}}
+      </tr>
+    {{- end}}
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Cómo usarlo</h2>
+  <pre><code>latest.json                 última cotización de todo
+set/USD/latest.json         último dólar de la DNIT
+set/USD/2026.json           un año, indexado por fecha
+bcp/EUR/2026.csv            un año en CSV
+bcp/EUR.csv                 todo el historial en CSV
+index.json                  fuentes, monedas y rango de fechas</code></pre>
+  <p>La DNIT publica todos los días del calendario (fines de semana y feriados repiten el último día hábil). El BCP publica solo días hábiles: para un sábado, usá el viernes.</p>
+  <p>Para consultar por fecha con esa regla resuelta, usá la API o la línea de comandos: <a href="https://github.com/jmendozaf/cotizapy">github.com/jmendozaf/cotizapy</a>.</p>
+
+  <footer>Datos públicos de la DNIT y el BCP, sin modificar. Proyecto de <a href="https://jmf.dev">jmf.dev</a>.</footer>
+</main>
+</body>
+</html>

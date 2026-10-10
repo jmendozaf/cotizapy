@@ -1,0 +1,5 @@
+.git
+cotiza.db*
+dist/
+site/
+data/

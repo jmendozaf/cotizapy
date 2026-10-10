@@ -1,0 +1,14 @@
+services:
+  cotiza:
+    build: .
+    image: cotizapy
+    ports:
+      - "8080:8080"
+    environment:
+      COTIZA_SYNC_EVERY: 6h
+    volumes:
+      - cotiza-data:/data
+    restart: unless-stopped
+
+volumes:
+  cotiza-data:
