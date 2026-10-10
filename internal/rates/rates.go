@@ -11,7 +11,7 @@ import (
 
 // Sources.
 const (
-	SET = "set" // DNIT (ex SET): exchange rates for tax purposes, buy and sell, every calendar day
+	SET = "set" // DNIT: exchange rates for tax purposes, buy and sell, every calendar day
 	BCP = "bcp" // Banco Central del Paraguay: reference rate, business days only
 )
 

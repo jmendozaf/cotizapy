@@ -39,7 +39,7 @@ type Source struct {
 // SourceInfo documents both sources.
 var SourceInfo = map[string]Source{
 	rates.SET: {
-		Name:        "DNIT (ex SET)",
+		Name:        "DNIT",
 		URL:         "https://www.dnit.gov.py/web/portal-institucional/cotizaciones",
 		Description: "Tipos de cambio que publica la DNIT para fines tributarios. Incluye todos los días del calendario: fines de semana y feriados repiten el último día hábil.",
 		Fields:      "buy, sell",

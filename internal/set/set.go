@@ -1,4 +1,4 @@
-// Package set reads the exchange rates the DNIT (ex SET) publishes for tax purposes.
+// Package set reads the exchange rates the DNIT publishes for tax purposes.
 // A single page carries every month since 2010, one table per month, with buy and sell rates
 // for six currencies on every calendar day (weekends and holidays repeat the last business day).
 package set
