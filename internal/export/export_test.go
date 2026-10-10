@@ -24,6 +24,7 @@ func TestWrite(t *testing.T) {
 		{Source: rates.SET, Currency: "USD", Date: "2025-12-31", Buy: "6900", Sell: "6910.5"},
 		{Source: rates.SET, Currency: "USD", Date: "2026-10-09", Buy: "5678.11", Sell: "5698.34"},
 		{Source: rates.BCP, Currency: "USD", Date: "2026-10-09", Reference: "5694.47"},
+		{Source: rates.BCP, Currency: "CHF", Date: "2026-10-09", Reference: "7100.12"},
 	})
 	dir := t.TempDir()
 	first := time.Date(2026, 10, 10, 12, 0, 0, 0, time.UTC)
@@ -54,6 +55,12 @@ func TestWrite(t *testing.T) {
 	}
 	if !strings.Contains(read("index.html"), "5.698,34") {
 		t.Error("index.html should show the SET sell rate formatted in guaraníes")
+	}
+	if strings.Contains(read("index.html"), "CHF") {
+		t.Error("index.html should only list the DNIT currencies")
+	}
+	if !strings.Contains(read("bcp/CHF.csv"), "7100.12") {
+		t.Error("BCP-only currencies should still be exported")
 	}
 	if !strings.Contains(read("latest.json"), `"reference": 5694.47`) {
 		t.Errorf("latest.json = %s", read("latest.json"))

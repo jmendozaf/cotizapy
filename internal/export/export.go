@@ -247,24 +247,20 @@ type pageRow struct {
 }
 
 func (w *writer) page(series []store.Series, latest map[string]map[string]rates.Rate, updated string) error {
-	seen := map[string]bool{}
 	var rows []pageRow
-	// SET currencies first (the ones used for invoices), then the rest of BCP.
-	for _, source := range rates.Sources {
-		for _, s := range series {
-			if s.Source != source || seen[s.Currency] {
-				continue
-			}
-			seen[s.Currency] = true
-			row := pageRow{Currency: s.Currency, Name: rates.Names[s.Currency]}
-			if r, ok := latest[rates.SET][s.Currency]; ok {
-				row.SET = &r
-			}
-			if r, ok := latest[rates.BCP][s.Currency]; ok {
-				row.BCP = &r
-			}
-			rows = append(rows, row)
+	// Only the DNIT currencies; the rest of the BCP ones stay in the JSON and CSV files.
+	for _, s := range series {
+		if s.Source != rates.SET {
+			continue
 		}
+		row := pageRow{Currency: s.Currency, Name: rates.Names[s.Currency]}
+		if r, ok := latest[rates.SET][s.Currency]; ok {
+			row.SET = &r
+		}
+		if r, ok := latest[rates.BCP][s.Currency]; ok {
+			row.BCP = &r
+		}
+		rows = append(rows, row)
 	}
 	slices.SortStableFunc(rows, func(a, b pageRow) int { return cmp.Compare(rank(a.Currency), rank(b.Currency)) })
 	var buf bytes.Buffer
