@@ -44,8 +44,14 @@ jobs:
           key: cotiza-db-${{ github.run_id }}
           restore-keys: cotiza-db-
 
-      - name: Sync
-        run: ./cotiza sync --quiet ${{ inputs.full && '--full' || '' }}
+      - name: Sync DNIT
+        run: ./cotiza sync --quiet --source set
+
+      # The page only lists DNIT currencies, so a BCP outage must not block publishing.
+      # Since 2026-11-06 bcp.gov.py answers 403 behind a Cloudflare challenge.
+      - name: Sync BCP
+        continue-on-error: true
+        run: ./cotiza sync --quiet --source bcp ${{ inputs.full && '--full' || '' }}
 
       - name: Save database
         uses: actions/cache/save@v4
