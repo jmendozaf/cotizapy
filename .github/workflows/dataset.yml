@@ -27,18 +27,18 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.first-deploy.outputs.page_url || steps.retry-deploy.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
 
       - run: go build -o cotiza ./cmd/cotiza
 
       - name: Restore database
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: cotiza.db
           key: cotiza-db-${{ github.run_id }}
@@ -54,7 +54,7 @@ jobs:
         run: ./cotiza sync --quiet --source bcp ${{ inputs.full && '--full' || '' }}
 
       - name: Save database
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: cotiza.db
           key: cotiza-db-${{ github.run_id }}
@@ -62,9 +62,18 @@ jobs:
       - name: Export
         run: ./cotiza export --page-only --dir site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: site
 
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      # The artifact API sometimes lags behind the upload and deploy-pages finds 0 artifacts.
+      - id: first-deploy
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+
+      - if: steps.first-deploy.outcome == 'failure'
+        run: sleep 30
+
+      - id: retry-deploy
+        if: steps.first-deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v5
